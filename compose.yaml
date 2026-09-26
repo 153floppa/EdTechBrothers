@@ -1,0 +1,33 @@
+# Локальный запуск: docker compose up --build
+# Порты открыты только на 127.0.0.1. Пароль БД — из .env (см. .env.example).
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: checkbalance
+      POSTGRES_USER: checkbalance
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U checkbalance -d checkbalance"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://checkbalance:${POSTGRES_PASSWORD}@db:5432/checkbalance
+      SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-12}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  dbdata:
