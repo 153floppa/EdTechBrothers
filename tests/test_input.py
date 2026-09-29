@@ -44,3 +44,16 @@ def test_validation_error_does_not_echo_values():
     with pytest.raises(HTTPException) as exc:
         parse_strict(b'{"amount": "secret-value", "external_id": "x"}', Payment)
     assert "secret-value" not in str(exc.value.detail)
+
+
+def test_api_rejects_wrong_content_type_and_oversized_body(client):
+    r = client.post("/auth/login", content=b"login=a&password=b", headers={"Content-Type": "text/plain"})
+    assert r.status_code == 415
+    big = b'{"login": "admin", "password": "' + b"a" * 20000 + b'"}'
+    r = client.post("/auth/login", content=big, headers={"Content-Type": "application/json"})
+    assert r.status_code == 413
+
+
+def test_login_with_extra_role_field_rejected(client):
+    r = client.post("/auth/login", json={"login": "admin", "password": "x" * 12, "role": "admin"})
+    assert r.status_code == 422

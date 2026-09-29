@@ -54,3 +54,50 @@ def login(client: TestClient, login_name: str, password: str = PASSWORD) -> dict
 def admin(client, db) -> dict:
     insert_user(db, "admin", "admin")
     return login(client, "admin")
+
+
+@pytest.fixture
+def school(client, db, admin) -> dict:
+    """Два преподавателя, два родителя, по ученику у каждой пары; на балансе первого — 5000 ₽."""
+    ids = {
+        "tutor_a": insert_user(db, "tutor_a", "tutor"),
+        "tutor_b": insert_user(db, "tutor_b", "tutor"),
+        "parent_a": insert_user(db, "parent_a", "parent"),
+        "parent_b": insert_user(db, "parent_b", "parent"),
+    }
+    students = {}
+    for suffix in ("a", "b"):
+        r = client.post(
+            "/students",
+            headers=admin,
+            json={
+                "full_name": f"Ученик {suffix.upper()}",
+                "grade": 11,
+                "tutor_id": ids[f"tutor_{suffix}"],
+                "parent_id": ids[f"parent_{suffix}"],
+                "parent_phone": "+79990000000",
+                "lesson_price": 2000,
+            },
+        )
+        assert r.status_code == 201, r.text
+        students[suffix] = r.json()["id"]
+    r = client.post(f"/students/{students['a']}/payments", headers=admin, json={"amount": 5000, "external_id": "op-1"})
+    assert r.status_code == 201, r.text
+    return {
+        "ids": ids,
+        "student_a": students["a"],
+        "student_b": students["b"],
+        "admin": admin,
+        "tutor_a": login(client, "tutor_a"),
+        "tutor_b": login(client, "tutor_b"),
+        "parent_a": login(client, "parent_a"),
+        "parent_b": login(client, "parent_b"),
+    }
+
+
+def past(minutes: int = 90) -> str:
+    return (datetime.now(timezone.utc) - timedelta(minutes=minutes)).isoformat()
+
+
+def future(hours: int = 24) -> str:
+    return (datetime.now(timezone.utc) + timedelta(hours=hours)).isoformat()
