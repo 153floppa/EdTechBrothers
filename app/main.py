@@ -10,7 +10,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from app import auth, students
+from app import auth, lessons, students
 from app.config import Settings, load_settings
 from app.db import close_pool, open_pool, tx
 
@@ -49,6 +49,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app.include_router(auth.router)
     app.include_router(students.router)
+    app.include_router(lessons.router)
     return app
 
 
