@@ -4,7 +4,7 @@
 
 Командный проект курса «Разработка безопасного программного обеспечения», команда EdTechBrothers.
 
-[Паспорт](PROJECT.md) · [Требования](docs/requirements.md) · [Модель угроз](docs/threat-model.md) · [Решения](docs/design-decisions.md) · [Вклад](CONTRIBUTIONS.md)
+[Паспорт](PROJECT.md) · [Требования](docs/requirements.md) · [Модель угроз](docs/threat-model.md) · [Решения](docs/design-decisions.md) · [Вклад](CONTRIBUTIONS.md) · [Учёт ИИ](AI_USAGE.md)
 
 ## Локальный запуск
 
@@ -89,5 +89,5 @@ app/          auth.py · access.py · input.py · students.py · lessons.py · s
 migrations/   001_users_sessions.sql · 002_students_lessons_ledger.sql
 tests/        интеграционные и модульные тесты
 scripts/      smoke.py · run-local.sh
-docs/         требования, модель угроз, решения, подготовка к EK1
+docs/         требования, модель угроз, проектные решения
 ```
